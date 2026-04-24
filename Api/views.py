@@ -18,16 +18,8 @@ from django.db.models import Q
 
 from .models import Register
 from .serializer import Register_serializer
-from .models import Search_data
-from .serializer import Search_serializer
-from .models import Students
-from .serializer import Student_serializer
-from .models import Task
-from .serializer import Task_serializer
 from .models import Booking
 from .serializer import Booking_serializer
-from .models import Message
-from .serializer import Message_serializer
 
     
 class Register_view(generics.ListCreateAPIView):
@@ -50,24 +42,6 @@ class Register_detail(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes=[JWTAuthentication,SessionAuthentication]
     permission_classes=[IsAuthenticated]
 
-class Search_view(generics.ListCreateAPIView):
-    queryset=Search_data.objects.all()
-    serializer_class=Search_serializer
-    filter_backends=[filters.SearchFilter]
-    search_fields=['Name','About']
-class Studentlist(generics.ListCreateAPIView):
-    queryset=Students.objects.all()
-    serializer_class=Student_serializer
-class Studentdetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset=Students.objects.all()
-    serializer_class=Student_serializer
-
-class Task_listview(generics.ListCreateAPIView):
-    queryset=Task.objects.all()
-    serializer_class=Task_serializer
-class Task_detailview(generics.RetrieveUpdateDestroyAPIView):
-    queryset=Task.objects.all()
-    serializer_class=Task_serializer
 
 class Bookinglistview(generics.ListCreateAPIView):
     serializer_class=Booking_serializer
@@ -89,22 +63,4 @@ class AvailableSlotView(APIView):
             'available_slot':available
         })
 
-class MessagelistView(ListCreateAPIView):
-    serializer_class=Message_serializer
-    permission_classes=[IsAuthenticated]
-
-    def perform_create(self, serializer):
-        serializer.save(sender=self.request.user)  
-
-class Chatlistview(APIView):
-    permission_classes=[IsAuthenticated]
-    
-    def get(self,request):
-        user=request.user
-        reciever_id=request.GET.get('reciever')
-        messages=Message.objects.filter(
-            Q(sender=user,reciever_id=reciever_id) | Q(sender_id=reciever_id,reciever=user)
-        ).order_by('created_at')
-        serializer=Message_serializer(messages, many=True)
-        return Response(serializer.data)
 # Create your views here.
